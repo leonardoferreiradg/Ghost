@@ -67,6 +67,16 @@ if (DASH_DASH_ARGS.includes('in-memory-repository') || DASH_DASH_ARGS.includes('
     });
 }
 
+if (DASH_DASH_ARGS.includes('collections') || DASH_DASH_ARGS.includes('all')) {
+    commands.push({
+        name: 'collections',
+        command: 'yarn dev',
+        cwd: path.resolve(__dirname, '../ghost/collections'),
+        prefixColor: 'pink',
+        env: {}
+    });
+}
+
 if (DASH_DASH_ARGS.includes('admin-x') || DASH_DASH_ARGS.includes('adminx') || DASH_DASH_ARGS.includes('adminX') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'adminX',
@@ -82,7 +92,7 @@ if (DASH_DASH_ARGS.includes('portal') || DASH_DASH_ARGS.includes('all')) {
     commands.push({
         name: 'portal',
         command: 'yarn dev',
-        cwd: path.resolve(__dirname, '../ghost/portal'),
+        cwd: path.resolve(__dirname, '../apps/portal'),
         prefixColor: 'magenta',
         env: {}
     });

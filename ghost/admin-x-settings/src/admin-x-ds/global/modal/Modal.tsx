@@ -1,10 +1,11 @@
-import Button, {IButton} from '../Button';
+import Button, {ButtonProps} from '../Button';
 import ButtonGroup from '../ButtonGroup';
+import ConfirmationModal from './ConfirmationModal';
 import Heading from '../Heading';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import StickyFooter from '../StickyFooter';
 import clsx from 'clsx';
-import {useModal} from '@ebay/nice-modal-react';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'bleed' | number;
 
@@ -21,6 +22,7 @@ export interface ModalProps {
     okColor?: string;
     cancelLabel?: string;
     leftButtonLabel?: string;
+    buttonsDisabled?: boolean;
     footer?: boolean | React.ReactNode;
     noPadding?: boolean;
     onOk?: () => void;
@@ -30,6 +32,9 @@ export interface ModalProps {
     backDropClick?: boolean;
     stickyFooter?: boolean;
     scrolling?: boolean;
+    dirty?: boolean;
+    closeConfrimationTitle?: string;
+    closeConfirmationPrompt?: React.ReactNode;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -40,6 +45,7 @@ const Modal: React.FC<ModalProps> = ({
     cancelLabel = 'Cancel',
     footer,
     leftButtonLabel,
+    buttonsDisabled,
     noPadding = false,
     onOk,
     okColor = 'black',
@@ -48,11 +54,37 @@ const Modal: React.FC<ModalProps> = ({
     backDrop = true,
     backDropClick = true,
     stickyFooter = false,
-    scrolling = true
+    scrolling = true,
+    dirty = false,
+    closeConfrimationTitle = 'Are you sure you want to leave this page?',
+    closeConfirmationPrompt = (
+        <>
+            <p>{`Hey there! It looks like you didn't save the changes you made.`}</p>
+            <p>Save before you go!</p>
+        </>
+    )
 }) => {
     const modal = useModal();
 
-    let buttons: IButton[] = [];
+    let buttons: ButtonProps[] = [];
+
+    const removeModal = () => {
+        if (!dirty) {
+            modal.remove();
+        } else {
+            NiceModal.show(ConfirmationModal, {
+                title: closeConfrimationTitle,
+                prompt: closeConfirmationPrompt,
+                okLabel: 'Leave',
+                cancelLabel: 'Stay',
+                okColor: 'red',
+                onOk: (confirmationModal) => {
+                    modal.remove();
+                    confirmationModal?.remove();
+                }
+            });
+        }
+    };
 
     if (!footer) {
         if (cancelLabel) {
@@ -60,8 +92,9 @@ const Modal: React.FC<ModalProps> = ({
                 key: 'cancel-modal',
                 label: cancelLabel,
                 onClick: (onCancel ? onCancel : () => {
-                    modal.remove();
-                })
+                    removeModal();
+                }),
+                disabled: buttonsDisabled
             });
         }
 
@@ -71,7 +104,8 @@ const Modal: React.FC<ModalProps> = ({
                 label: okLabel,
                 color: okColor,
                 className: 'min-w-[80px]',
-                onClick: onOk
+                onClick: onOk,
+                disabled: buttonsDisabled
             });
         }
     }
@@ -142,7 +176,7 @@ const Modal: React.FC<ModalProps> = ({
 
     const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget && backDropClick) {
-            modal.remove();
+            removeModal();
         }
     };
 
